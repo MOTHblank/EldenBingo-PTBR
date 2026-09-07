@@ -118,7 +118,7 @@ namespace Neto.Server
             BanIP(client.IPAddress);
         }
 
-        public void BanIP(IPAddress ip)
+        public virtual void BanIP(IPAddress ip)
         {
             lock(BannedIps)
                 BannedIps.Add(ip);
@@ -133,7 +133,7 @@ namespace Neto.Server
             FireOnStatus($"Banned IP {ip}");
         }
 
-        public void UnbanIP(IPAddress ip)
+        public virtual void UnbanIP(IPAddress ip)
         {
             lock (BannedIps)
             {

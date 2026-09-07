@@ -132,6 +132,12 @@ namespace EldenBingoServer
                 await base.Stop();
         }
 
+        public override void UnbanIP(IPAddress ip)
+        {
+            base.UnbanIP(ip);
+            _ipStats.TryRemove(ip, out _);
+        }
+
         protected override async Task DropClient(BingoClientModel client)
         {
             if (client.Room != null)
