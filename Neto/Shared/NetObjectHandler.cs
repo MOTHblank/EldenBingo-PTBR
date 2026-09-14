@@ -73,17 +73,28 @@ namespace Neto.Shared
         protected async Task<Packet?[]> ReadPackets(Stream stream, CancellationTokenSource cancelToken)
         {
             const int size = 1024;
+            const int MaxPacketSize = 256 * 1024; // 256 KB max frame size
             try
             {
                 byte[] buffer = new byte[4];
                 await stream.ReadAsync(buffer, 0, 4, cancelToken.Token);
                 var numBytes = BitConverter.ToInt32(buffer, 0);
+
+                // Validate length header to avoid memory exhaustion / DoS
+                if (numBytes <= 0 || numBytes > MaxPacketSize)
+                {
+                    FireOnError($"Invalid packet length: {numBytes}");
+                    cancelToken.Cancel();
+                    return Array.Empty<Packet?>();
+                }
+
                 var totalBytesRead = 0;
                 buffer = new byte[size];
                 MemoryStream ms = new MemoryStream(size);
                 do
                 {
-                    var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, Math.Min(size, numBytes - totalBytesRead)), cancelToken.Token);
+                    var toRead = Math.Min(size, numBytes - totalBytesRead);
+                    var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, toRead), cancelToken.Token);
                     //0 bytes read when connection closed on the other end
                     if (bytesRead == 0)
                         cancelToken.Cancel();
