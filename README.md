@@ -1,4 +1,4 @@
-**Este fork tem como objetivo adicionar tradução em Português do Brasil (PT-BR) ao projeto, mantendo a capacidade de alternar entre Inglês (EN) e Português (PT-BR).**
+**This fork aims to add a Brazilian Portuguese (PT-BR) localization to the project, while keeping the ability to alternate between EN and PT-BR.**
 
 # Elden Bingo
 Esta aplicação facilita a execução, administração, espectação e transmissão de corridas de Bingo no Elden Ring. Foi desenvolvida tendo o [Bingo Brawlers](https://bingobrawlers.com) em mente. É construída em .NET 8.0, portanto requer que os [runtimes](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-8.0.27-windows-x64-installer) estejam instalados.
