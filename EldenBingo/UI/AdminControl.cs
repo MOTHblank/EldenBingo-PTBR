@@ -12,6 +12,20 @@ namespace EldenBingo.UI
         public AdminControl()
         {
             InitializeComponent();
+            ApplyLocalization();
+        }
+
+        public void ApplyLocalization()
+        {
+            label3.Text = LocalizationManager.GetString("Admin Controls");
+            label1.Text = LocalizationManager.GetString("Upload Bingo JSON:");
+            _browseJsonButton.Text = LocalizationManager.GetString("Browse");
+            _uploadJsonButton.Text = LocalizationManager.GetString("Upload");
+            _lobbySettingsButton.Text = LocalizationManager.GetString("Edit Lobby Settings");
+            _generateNewBoardButton.Text = LocalizationManager.GetString("Randomize New Board");
+            _startMatchButton.Text = LocalizationManager.GetString("Start Match");
+            _pauseMatchButton.Text = Client?.Room != null && Client.Room.Match.Paused ? LocalizationManager.GetString("Unpause Match") : LocalizationManager.GetString("Pause Match");
+            _stopMatchButton.Text = LocalizationManager.GetString("Stop Match");
         }
 
         private void AdminControl_Load(object sender, EventArgs e)

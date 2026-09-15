@@ -21,6 +21,8 @@ namespace EldenBingo.UI
             _instance = this;
             _adminHeight = adminControl1.Height;
 
+            ApplyLocalization();
+
             listenToSettingsChanged();
             Load += lobbyControl_Load;
 
@@ -29,6 +31,15 @@ namespace EldenBingo.UI
 
             SizeChanged += lobbyControl_SizeChanged;
             splitContainer1.Panel1.SizeChanged += bingoPanel_SizeChanged;
+        }
+
+        public void ApplyLocalization()
+        {
+            _requestLogLinkLabel.Text = LocalizationManager.GetString("Download Match Log");
+            _requestJsonLinkLabel.Text = LocalizationManager.GetString("(as Json)");
+            _chatTextBox.PlaceholderText = LocalizationManager.GetString("Send a message");
+            _adminInfoLabel.Text = LocalizationManager.GetString("AdminSpectator Info: Check/count actions are made on behalf of selection's team");
+            adminControl1?.ApplyLocalization();
         }
 
         public static UserInRoom? CurrentlyOnBehalfOfUser

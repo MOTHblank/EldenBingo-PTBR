@@ -78,6 +78,26 @@ namespace EldenBingo
             Instance = this;
 
             addVersionToTitle();
+            ApplyLocalization();
+            LocalizationManager.LanguageChanged += ApplyLocalization;
+        }
+
+        public void ApplyLocalization()
+        {
+            _connectButton.Text = LocalizationManager.GetString("Connect");
+            _disconnectButton.Text = LocalizationManager.GetString("Disconnect");
+            _createLobbyButton.Text = LocalizationManager.GetString("Create Lobby");
+            _joinLobbyButton.Text = LocalizationManager.GetString("Join Lobby");
+            _leaveRoomButton.Text = LocalizationManager.GetString("Leave Lobby");
+            _changeTeamButton.Text = LocalizationManager.GetString("Change Team");
+            _openMapButton.Text = LocalizationManager.GetString("Open Map");
+            _openMapButton.ToolTipText = LocalizationManager.GetString("Open Map");
+            _openExternalBoardToolStripButton.Text = LocalizationManager.GetString("Pop-Out Board");
+            _settingsButton.Text = LocalizationManager.GetString("Settings");
+            _startGameButton.Text = LocalizationManager.GetString("Start Elden Ring");
+            _consolePage.Text = LocalizationManager.GetString("Console");
+            _lobbyPage.Text = LocalizationManager.GetString("Lobby");
+            _lobbyControl?.ApplyLocalization();
         }
 
         public RawInputHandler RawInput => _rawInput;
