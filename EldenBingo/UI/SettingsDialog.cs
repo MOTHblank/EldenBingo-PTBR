@@ -1,5 +1,6 @@
 ﻿using EldenBingo.Settings;
 using EldenBingo.Sfx;
+using EldenBingoCommon;
 
 namespace EldenBingo.UI
 {
@@ -20,10 +21,12 @@ namespace EldenBingo.UI
         {
             InitializeComponent();
 
-            _volumeLabelInitial = _volumeLabel.Text;
-            _shadowLabelInitial = _shadowLabel.Text;
+            ApplyLocalization();
+
+            _volumeLabelInitial = LocalizationManager.GetString("Volume");
+            _shadowLabelInitial = LocalizationManager.GetString("Square Shadow Opacity");
             _numKeywordsLabelInitial = _numKeywordsLabel.Text;
-            _keywordAlphaLabelInitial = _keywordColorAlphaLabel.Text;
+            _keywordAlphaLabelInitial = LocalizationManager.GetString("Text Color Intensity");
 
             _keywordColors = new List<KeywordColor>(KeywordColorsJsonHelper.Colors);
 
@@ -32,6 +35,84 @@ namespace EldenBingo.UI
             tabControl1.SelectedIndex = Properties.Settings.Default.LastSettingsTab;
 
             connectEvents();
+        }
+
+        private void ApplyLocalization()
+        {
+            Text = LocalizationManager.GetString("Settings");
+            tabPage1.Text = LocalizationManager.GetString("General");
+            tabPage2.Text = LocalizationManager.GetString("Bingo Board");
+            tabPage3.Text = LocalizationManager.GetString("Map");
+            tabPage4.Text = LocalizationManager.GetString("Hotkeys");
+
+            groupBox3.Text = LocalizationManager.GetString("Appearance");
+            label5.Text = LocalizationManager.GetString("Window Background Color:");
+            _alwaysOnTopCheckbox.Text = LocalizationManager.GetString("Always on Top");
+
+            groupBox5.Text = LocalizationManager.GetString("Server Hosting");
+            _hostServerCheckBox.Text = LocalizationManager.GetString("Host a bingo server on launch");
+            label9.Text = LocalizationManager.GetString("Port:");
+
+            groupBox10.Text = LocalizationManager.GetString("Application Updates");
+            _checkUpdatesCheckBox.Text = LocalizationManager.GetString("Check for updates on startup");
+
+            groupBox11.Text = LocalizationManager.GetString("Language");
+            label17.Text = LocalizationManager.GetString("Language:");
+
+            groupBox8.Text = LocalizationManager.GetString("Sounds");
+            _soundCheckBox.Text = LocalizationManager.GetString("Enable alert sounds");
+            _snipeCheckBox.Text = LocalizationManager.GetString("Special alert when currently hovered square is marked by opponent (sniped)");
+            label14.Text = LocalizationManager.GetString("Output Device:");
+            _testSoundButton.Text = LocalizationManager.GetString("Play Test Sfx");
+
+            groupBox7.Text = LocalizationManager.GetString("Appearance");
+            label8.Text = LocalizationManager.GetString("Font and Size:");
+            _highlightMarkedCheckBox.Text = LocalizationManager.GetString("Highlight Marked Squares");
+            _highlightBingoCheckBox.Text = LocalizationManager.GetString("Highlight Bingo Lines");
+            label10.Text = LocalizationManager.GetString("Keyword Colors");
+            _keywordColorsButton.Text = LocalizationManager.GetString("Edit...");
+            _suggestedColorsCheckBox.Text = LocalizationManager.GetString("Apply colors suggested by board");
+
+            groupBox2.Text = LocalizationManager.GetString("Bingo Board Max Size");
+            _bingoNoMaxSizeRadioButton.Text = LocalizationManager.GetString("No Maximum Size");
+            _bingoCustomMaxSizeRadioButton.Text = LocalizationManager.GetString("Custom Max Size");
+
+            groupBox9.Text = LocalizationManager.GetString("Spectator Settings");
+            label13.Text = LocalizationManager.GetString("When spectating, delay all match events (this includes square checks, counters, match status changes, timer etc.):");
+            label12.Text = LocalizationManager.GetString("milliseconds");
+
+            groupBox4.Text = LocalizationManager.GetString("Map Initial Position");
+            _mapPositionRelativeRadioButton.Text = LocalizationManager.GetString("Relative to Window");
+            _mapPositionCustomRadioButton.Text = LocalizationManager.GetString("Custom Position");
+            groupBox1.Text = LocalizationManager.GetString("Map Initial Size");
+            _mapSizeRememberLastRadioButton.Text = LocalizationManager.GetString("Remember Last Size");
+            _mapSizeCustomRadioButton.Text = LocalizationManager.GetString("Custom Size");
+            groupBox6.Text = LocalizationManager.GetString("Misc.");
+            _swapMouseButtons.Text = LocalizationManager.GetString("Swap mouse buttons***(Left = Draw, Right = Pan)");
+            _showClassesCheckBox.Text = LocalizationManager.GetString("Show available classes in an overlay on the map (for streaming)");
+            label16.Text = LocalizationManager.GetString("Map Framerate Limit (0 to disable)");
+
+            groupBox12.Text = LocalizationManager.GetString("Bingo Board Hotkeys");
+            _upBindingControl.DisplayName = LocalizationManager.GetString("↑ Up");
+            _downBindingControl.DisplayName = LocalizationManager.GetString("↓ Down");
+            _leftBindingControl.DisplayName = LocalizationManager.GetString("← Left");
+            _rightBindingControl.DisplayName = LocalizationManager.GetString("→ Right");
+            _upLeftBindingControl.DisplayName = LocalizationManager.GetString("↖️ Up Left");
+            _upRightBindingControl.DisplayName = LocalizationManager.GetString("↗️ Up Right");
+            _downLeftBindingControl.DisplayName = LocalizationManager.GetString("↙️ Down Left");
+            _downRightBindingControl.DisplayName = LocalizationManager.GetString("↘️ Down Right");
+            _checkBindingControl.DisplayName = LocalizationManager.GetString("✔️ Mark Square");
+            _starBindingControl.DisplayName = LocalizationManager.GetString("⭐ Star Square");
+            _countIncBindingControl.DisplayName = LocalizationManager.GetString("➕ Increment Count");
+            _countDecBindingControl.DisplayName = LocalizationManager.GetString("➖ Decrement Count");
+            label11.Text = LocalizationManager.GetString("Enable hotkeys only if these modifier keys are held:");
+            _shiftCheckBox.Text = LocalizationManager.GetString("Shift");
+            _controlCheckBox.Text = LocalizationManager.GetString("Control");
+            _altCheckBox.Text = LocalizationManager.GetString("Left Alt");
+            label15.Text = LocalizationManager.GetString("Note: Mouse wheel is always bound to increment and decrement the counter for the hovered square");
+
+            _okButton.Text = LocalizationManager.GetString("OK");
+            _cancelButton.Text = LocalizationManager.GetString("Cancel");
         }
 
         private void connectEvents()
@@ -187,12 +268,33 @@ namespace EldenBingo.UI
             _shiftCheckBox.Checked = (Properties.Settings.Default.Hotkey_ModifierKeys & (int)Keys.Shift) > 0;
             _controlCheckBox.Checked = (Properties.Settings.Default.Hotkey_ModifierKeys & (int)Keys.Control) > 0;
             _altCheckBox.Checked = (Properties.Settings.Default.Hotkey_ModifierKeys & (int)Keys.Alt) > 0;
+
+            initLanguageComboBox();
+
             updateSizeEnable();
             updatePositionEnable();
             updateMaxSizeEnable();
             updateVolumeText();
             updateShadowText();
             updateKeywordColorText();
+        }
+
+        private void initLanguageComboBox()
+        {
+            _languageComboBox.Items.Clear();
+            _languageComboBox.Items.Add(new LanguageItem("en", "English"));
+            _languageComboBox.Items.Add(new LanguageItem("pt-BR", "Português (Brasil)"));
+
+            var current = Properties.Settings.Default.Language;
+            if (current == "pt-BR" || current == "pt")
+                _languageComboBox.SelectedIndex = 1;
+            else
+                _languageComboBox.SelectedIndex = 0;
+        }
+
+        private record LanguageItem(string Code, string DisplayName)
+        {
+            public override string ToString() => DisplayName;
         }
 
         private void updateSizeEnable()
@@ -311,6 +413,13 @@ namespace EldenBingo.UI
                 (_shiftCheckBox.Checked ? (int)Keys.Shift : 0) |
                 (_controlCheckBox.Checked ? (int)Keys.Control : 0) |
                 (_altCheckBox.Checked ? (int)Keys.Alt : 0);
+
+            if (_languageComboBox.SelectedItem is LanguageItem langItem)
+            {
+                Properties.Settings.Default.Language = langItem.Code;
+                LocalizationManager.CurrentLanguage = langItem.Code;
+            }
+
             Properties.Settings.Default.Save();
             return true;
         }

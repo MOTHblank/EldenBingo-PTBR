@@ -19,6 +19,7 @@ namespace EldenBingo
             ApplicationConfiguration.Initialize();
 
             handleSettingsChanges();
+            LocalizationManager.CurrentLanguage = Properties.Settings.Default.Language;
 
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(EldenBingo_UnhandledException);
             _mainForm = new MainForm();

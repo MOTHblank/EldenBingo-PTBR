@@ -125,11 +125,7 @@ namespace EldenBingoCommon
 
         public static string GetTeamName(int team)
         {
-            if (team == -1)
-                return "Spectator";
-            if (team >= 0 && team < TeamColors.Length)
-                return TeamColors[team].Name + " Team";
-            return String.Empty;
+            return LocalizationManager.GetTeamName(team);
         }
     }
 }
