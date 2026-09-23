@@ -116,19 +116,13 @@ jobs:
           Compress-Archive -Path "release\*" -DestinationPath $zip -CompressionLevel Optimal
           Write-Host "Created $zip"
 
-      - name: Publish GitHub Release if missing
+      - name: Publish or refresh GitHub Release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh release view "$env:TAG" *> $null
-          if ($LASTEXITCODE -eq 0) {
-            Write-Host "Release $env:TAG already exists; build and smoke test succeeded."
-            exit 0
-          }
-
           $zip = "EldenBingo_v$env:VERSION.zip"
           $notes = @"
           ## EldenBingo PT-BR $env:VERSION
@@ -136,7 +130,9 @@ jobs:
           Release de correção da inicialização da localização PT-BR.
 
           ### Correções
-          - Remove chave duplicada "Bingo Board" do dicionário de localização PT-BR, que causava TypeInitializationException ao iniciar.
+          - Remove a chave duplicada "Bingo Board" do dicionário de localização PT-BR.
+          - Remove a colisão case-insensitive "Stop Match" / "Stop match".
+          - Estas colisões causavam TypeInitializationException durante a inicialização do LocalizationManager.
           - Adiciona validação automática de chaves duplicadas de localização antes de compilar e publicar.
           - Mantém o pacote Windows x64 self-contained e o diagnóstico de falhas de inicialização.
 
@@ -151,13 +147,15 @@ jobs:
           O pacote foi compilado, verificado como self-contained e submetido a um teste automático de inicialização sem usar uma instalação global do .NET.
           "@
 
-          gh release create "$env:TAG" "$zip" --target "$env:GITHUB_SHA" --title "$env:TAG - EldenBingo PT-BR" --notes "$notes"
-
-          if ($env:VERSION -eq "0.19.2") {
-            foreach ($oldTag in @("v0.19.1", "v0.19.0")) {
-              gh release view "$oldTag" *> $null
-              if ($LASTEXITCODE -eq 0) {
-                gh release edit "$oldTag" --prerelease --title "$oldTag - Superseded by v0.19.2"
-              }
+          gh release view "$env:TAG" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release edit "$env:TAG" --title "$env:TAG - EldenBingo PT-BR" --notes "$notes"
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to refresh existing release $env:TAG."
             }
+
+            Write-Host "Release $env:TAG already exists; notes refreshed after successful validation."
+            exit 0
           }
+
+          gh release create "$env:TAG" "$zip" --target "$env:GITHUB_SHA" --title "$env:TAG - EldenBingo PT-BR" --notes "$notes"
