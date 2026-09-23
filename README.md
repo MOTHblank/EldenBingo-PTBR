@@ -134,7 +134,7 @@ Para gerar e publicar uma nova release do projeto **EldenBingo-PTBR**:
      ```
 5. **Publicar no GitHub Releases:**
    - Acesse as releases do repositório `MOTHblank/EldenBingo-PTBR` no GitHub.
-   - Crie uma nova Release selecionando a tag `v0.19.3`.
+   - Crie uma nova Release selecionando a tag `0.19.3`.
    - Adicione o título no padrão upstream (ex.: `Elden Bingo v0.19.3`) e as notas da versão.
    - Anexe o arquivo `.zip` empacotado como asset da release e publique.
 
