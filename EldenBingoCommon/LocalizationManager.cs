@@ -197,7 +197,6 @@ namespace EldenBingoCommon
             { "Disconnect from server?", "Desconectar do servidor?" },
             { "Leave current lobby?", "Sair do lóbi atual?" },
             { "Stop match? The match will end immediately", "Parar partida? A partida será encerrada imediatamente" },
-            { "Stop match", "Parar partida" },
             { "Language", "Idioma" },
             { "English", "Inglês (English)" },
             { "Portuguese (Brazil)", "Português (Brasil)" },
