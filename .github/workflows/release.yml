@@ -1,0 +1,106 @@
+name: Build, smoke test, and release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore EldenBingo.sln
+
+      - name: Build solution
+        run: dotnet build EldenBingo.sln -c Release --no-restore
+
+      - name: Publish Windows x64 client
+        run: dotnet publish EldenBingo/EldenBingo.csproj -c Release -r win-x64 --self-contained false --no-restore -o release
+
+      - name: Smoke test client startup
+        shell: pwsh
+        run: |
+          $exe = Join-Path $PWD "release\EldenBingo.exe"
+          if (-not (Test-Path $exe)) {
+            throw "Published executable was not found: $exe"
+          }
+
+          $process = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 8
+
+          if ($process.HasExited) {
+            throw "EldenBingo.exe exited during startup with code $($process.ExitCode)."
+          }
+
+          Stop-Process -Id $process.Id -Force
+          Write-Host "Startup smoke test passed."
+
+      - name: Read application version
+        id: version
+        shell: pwsh
+        run: |
+          $text = Get-Content "EldenBingoCommon\Version.cs" -Raw
+          if ($text -notmatch 'CurrentVersion\s*=>\s*"([^"]+)"') {
+            throw "Could not read CurrentVersion from EldenBingoCommon/Version.cs"
+          }
+          $version = $Matches[1]
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+
+      - name: Package release
+        shell: pwsh
+        run: |
+          $zip = "EldenBingo_v${{ steps.version.outputs.version }}.zip"
+          if (Test-Path $zip) {
+            Remove-Item $zip -Force
+          }
+          Compress-Archive -Path "release\*" -DestinationPath $zip -CompressionLevel Optimal
+          Write-Host "Created $zip"
+
+      - name: Publish GitHub Release if missing
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release view "$env:TAG" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Release $env:TAG already exists; build and smoke test succeeded."
+            exit 0
+          }
+
+          $zip = "EldenBingo_v$env:VERSION.zip"
+          $notes = @"
+          ## EldenBingo PT-BR $env:VERSION
+
+          Primeira release publicada deste fork com suporte a Português do Brasil e alternância entre EN/PT-BR.
+
+          ### Inclui
+          - Localização em Português do Brasil.
+          - Alternância de idioma entre Inglês e Português do Brasil.
+          - Correção de segurança para validação do tamanho de pacotes.
+          - Referências de atualização apontando para este fork PT-BR.
+
+          ### Requisitos
+          - Windows x64.
+          - .NET Desktop Runtime 8.
+
+          O pacote desta release foi compilado e submetido a um teste automático de inicialização antes da publicação.
+          "@
+
+          gh release create "$env:TAG" "$zip" --target "$env:GITHUB_SHA" --title "$env:TAG - EldenBingo PT-BR" --notes "$notes"
