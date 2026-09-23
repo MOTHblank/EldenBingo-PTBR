@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-GITHUB_REPO="awsker/EldenBingo"
+GITHUB_REPO="MOTHblank/EldenBingo-PTBR"
 GITHUB_LATEST_RELEASE_API_URL="https://api.github.com/repos/${GITHUB_REPO}/releases/latest"
 DEFAULT_INSTALL_DIR="$HOME/.local/share/eldenbingo"
 INSTALL_DIR="$DEFAULT_INSTALL_DIR"
