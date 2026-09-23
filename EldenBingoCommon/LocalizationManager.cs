@@ -164,7 +164,6 @@ namespace EldenBingoCommon
             { "Save Ruleset To File...", "Salvar Conjunto de Regras em Arquivo..." },
 
             // Map Window & Popout Board Form
-            { "Bingo Board", "Tabuleiro de Bingo" },
             { "Map Window", "Janela do Mapa" },
             { "Textures loading...", "Carregando texturas..." },
 
