@@ -39,6 +39,7 @@ namespace EldenBingo
         public MainForm()
         {
             InitializeComponent();
+            InitializeLanguageMenu();
             _processHandler = new GameProcessHandler();
             _processHandler.StatusChanged += _processHandler_StatusChanged;
             _processHandler.CoordinatesChanged += _processHandler_CoordinatesChanged;
@@ -94,10 +95,82 @@ namespace EldenBingo
             _openMapButton.ToolTipText = LocalizationManager.GetString("Open Map");
             _openExternalBoardToolStripButton.Text = LocalizationManager.GetString("Pop-Out Board");
             _settingsButton.Text = LocalizationManager.GetString("Settings");
+            _languageButton.Text = LocalizationManager.GetString("Language");
+            _languageButton.ToolTipText = LocalizationManager.GetString("Language");
+            UpdateLanguageMenuChecks();
             _startGameButton.Text = LocalizationManager.GetString("Start Elden Ring");
             _consolePage.Text = LocalizationManager.GetString("Console");
             _lobbyPage.Text = LocalizationManager.GetString("Lobby");
             _lobbyControl?.ApplyLocalization();
+        }
+
+        private void InitializeLanguageMenu()
+        {
+            _languageButton.Image = CreateLanguageIcon();
+
+            var englishItem = new ToolStripMenuItem("English")
+            {
+                Tag = "en"
+            };
+
+            var portugueseItem = new ToolStripMenuItem("Português (Brasil)")
+            {
+                Tag = "pt-BR"
+            };
+
+            _languageButton.DropDownItems.Add(englishItem);
+            _languageButton.DropDownItems.Add(portugueseItem);
+            _languageButton.DropDownItemClicked += LanguageButton_DropDownItemClicked;
+
+            UpdateLanguageMenuChecks();
+        }
+
+        private void LanguageButton_DropDownItemClicked(object? sender, ToolStripItemClickedEventArgs e)
+        {
+            if (e.ClickedItem?.Tag is not string languageCode)
+                return;
+
+            Properties.Settings.Default.Language = languageCode;
+            Properties.Settings.Default.Save();
+            LocalizationManager.CurrentLanguage = languageCode;
+            UpdateLanguageMenuChecks();
+        }
+
+        private void UpdateLanguageMenuChecks()
+        {
+            if (_languageButton == null)
+                return;
+
+            foreach (ToolStripItem item in _languageButton.DropDownItems)
+            {
+                if (item is ToolStripMenuItem menuItem && menuItem.Tag is string languageCode)
+                {
+                    menuItem.Checked = string.Equals(
+                        LocalizationManager.CurrentLanguage,
+                        languageCode,
+                        StringComparison.OrdinalIgnoreCase);
+                }
+            }
+        }
+
+        private static Bitmap CreateLanguageIcon()
+        {
+            const int size = 32;
+            var bitmap = new Bitmap(size, size);
+
+            using var graphics = Graphics.FromImage(bitmap);
+            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            graphics.Clear(Color.Transparent);
+
+            using var pen = new Pen(SystemColors.ControlText, 2f);
+            var bounds = new RectangleF(4f, 4f, 24f, 24f);
+
+            graphics.DrawEllipse(pen, bounds);
+            graphics.DrawEllipse(pen, new RectangleF(10f, 4f, 12f, 24f));
+            graphics.DrawLine(pen, 5f, 12f, 27f, 12f);
+            graphics.DrawLine(pen, 5f, 20f, 27f, 20f);
+
+            return bitmap;
         }
 
         public RawInputHandler RawInput => _rawInput;

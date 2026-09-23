@@ -20,7 +20,6 @@ namespace EldenBingo.UI
         public SettingsDialog()
         {
             InitializeComponent();
-
             ApplyLocalization();
 
             _volumeLabelInitial = LocalizationManager.GetString("Volume");
@@ -55,9 +54,6 @@ namespace EldenBingo.UI
 
             groupBox10.Text = LocalizationManager.GetString("Application Updates");
             _checkUpdatesCheckBox.Text = LocalizationManager.GetString("Check for updates on startup");
-
-            groupBox11.Text = LocalizationManager.GetString("Language");
-            label17.Text = LocalizationManager.GetString("Language:");
 
             groupBox8.Text = LocalizationManager.GetString("Sounds");
             _soundCheckBox.Text = LocalizationManager.GetString("Enable alert sounds");
@@ -269,8 +265,6 @@ namespace EldenBingo.UI
             _controlCheckBox.Checked = (Properties.Settings.Default.Hotkey_ModifierKeys & (int)Keys.Control) > 0;
             _altCheckBox.Checked = (Properties.Settings.Default.Hotkey_ModifierKeys & (int)Keys.Alt) > 0;
 
-            initLanguageComboBox();
-
             updateSizeEnable();
             updatePositionEnable();
             updateMaxSizeEnable();
@@ -279,23 +273,6 @@ namespace EldenBingo.UI
             updateKeywordColorText();
         }
 
-        private void initLanguageComboBox()
-        {
-            _languageComboBox.Items.Clear();
-            _languageComboBox.Items.Add(new LanguageItem("en", "English"));
-            _languageComboBox.Items.Add(new LanguageItem("pt-BR", "Português (Brasil)"));
-
-            var current = Properties.Settings.Default.Language;
-            if (current == "pt-BR" || current == "pt")
-                _languageComboBox.SelectedIndex = 1;
-            else
-                _languageComboBox.SelectedIndex = 0;
-        }
-
-        private record LanguageItem(string Code, string DisplayName)
-        {
-            public override string ToString() => DisplayName;
-        }
 
         private void updateSizeEnable()
         {
@@ -414,11 +391,6 @@ namespace EldenBingo.UI
                 (_controlCheckBox.Checked ? (int)Keys.Control : 0) |
                 (_altCheckBox.Checked ? (int)Keys.Alt : 0);
 
-            if (_languageComboBox.SelectedItem is LanguageItem langItem)
-            {
-                Properties.Settings.Default.Language = langItem.Code;
-                LocalizationManager.CurrentLanguage = langItem.Code;
-            }
 
             Properties.Settings.Default.Save();
             return true;
