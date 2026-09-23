@@ -17,6 +17,27 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
 
+      - name: Validate localization keys
+        shell: pwsh
+        run: |
+          $text = Get-Content "EldenBingoCommon\LocalizationManager.cs" -Raw
+          $matches = [regex]::Matches(
+            $text,
+            '\{\s*"(?<key>(?:[^"\\]|\\.)*)"\s*,\s*"(?<value>(?:[^"\\]|\\.)*)"\s*\}'
+          )
+
+          $duplicates = $matches |
+            ForEach-Object { $_.Groups["key"].Value } |
+            Group-Object -CaseSensitive:$false |
+            Where-Object Count -gt 1
+
+          if ($duplicates) {
+            $names = ($duplicates | ForEach-Object Name) -join ", "
+            throw "Duplicate localization keys found: $names"
+          }
+
+          Write-Host "Localization keys are unique."
+
       - name: Set up .NET 8
         uses: actions/setup-dotnet@v4
         with:
@@ -112,13 +133,12 @@ jobs:
           $notes = @"
           ## EldenBingo PT-BR $env:VERSION
 
-          Release de correção de inicialização e distribuição.
+          Release de correção da inicialização da localização PT-BR.
 
           ### Correções
-          - O pacote Windows x64 agora é self-contained e não requer instalação separada do .NET Desktop Runtime.
-          - Falhas durante a inicialização agora exibem uma mensagem de erro em vez de fechar silenciosamente.
-          - O log de crash agora preserva a cadeia completa de exceções.
-          - A migração de configurações antigas trata valores ausentes com segurança.
+          - Remove chave duplicada "Bingo Board" do dicionário de localização PT-BR, que causava TypeInitializationException ao iniciar.
+          - Adiciona validação automática de chaves duplicadas de localização antes de compilar e publicar.
+          - Mantém o pacote Windows x64 self-contained e o diagnóstico de falhas de inicialização.
 
           ### Inclui também
           - Localização em Português do Brasil.
@@ -133,9 +153,11 @@ jobs:
 
           gh release create "$env:TAG" "$zip" --target "$env:GITHUB_SHA" --title "$env:TAG - EldenBingo PT-BR" --notes "$notes"
 
-          if ($env:VERSION -eq "0.19.1") {
-            gh release view "v0.19.0" *> $null
-            if ($LASTEXITCODE -eq 0) {
-              gh release edit "v0.19.0" --prerelease --title "v0.19.0 - Superseded by v0.19.1"
+          if ($env:VERSION -eq "0.19.2") {
+            foreach ($oldTag in @("v0.19.1", "v0.19.0")) {
+              gh release view "$oldTag" *> $null
+              if ($LASTEXITCODE -eq 0) {
+                gh release edit "$oldTag" --prerelease --title "$oldTag - Superseded by v0.19.2"
+              }
             }
           }

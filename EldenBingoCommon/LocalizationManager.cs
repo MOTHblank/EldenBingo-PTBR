@@ -164,7 +164,6 @@ namespace EldenBingoCommon
             { "Save Ruleset To File...", "Salvar Conjunto de Regras em Arquivo..." },
 
             // Map Window & Popout Board Form
-            { "Bingo Board", "Tabuleiro de Bingo" },
             { "Map Window", "Janela do Mapa" },
             { "Textures loading...", "Carregando texturas..." },
 
@@ -198,7 +197,6 @@ namespace EldenBingoCommon
             { "Disconnect from server?", "Desconectar do servidor?" },
             { "Leave current lobby?", "Sair do lóbi atual?" },
             { "Stop match? The match will end immediately", "Parar partida? A partida será encerrada imediatamente" },
-            { "Stop match", "Parar partida" },
             { "Language", "Idioma" },
             { "English", "Inglês (English)" },
             { "Portuguese (Brazil)", "Português (Brasil)" },
