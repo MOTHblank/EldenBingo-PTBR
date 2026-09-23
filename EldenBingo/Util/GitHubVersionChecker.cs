@@ -62,7 +62,11 @@ namespace EldenBingo.Util
             if (normalizedTag.StartsWith("v", StringComparison.OrdinalIgnoreCase))
                 normalizedTag = normalizedTag[1..];
 
-            return Version.TryParse(normalizedTag, out version!);
+            if (!Version.TryParse(normalizedTag, out var parsedVersion) || parsedVersion == null)
+                return false;
+
+            version = parsedVersion;
+            return true;
         }
 
         public record struct GitHubRelease(string Name, string Tag_Name, string Html_Url, bool Prerelease, GitHubAsset[]? Assets);
