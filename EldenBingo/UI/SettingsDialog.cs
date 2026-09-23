@@ -20,8 +20,6 @@ namespace EldenBingo.UI
         public SettingsDialog()
         {
             InitializeComponent();
-            groupBox11.Visible = false;
-
             ApplyLocalization();
 
             _volumeLabelInitial = LocalizationManager.GetString("Volume");
@@ -56,9 +54,6 @@ namespace EldenBingo.UI
 
             groupBox10.Text = LocalizationManager.GetString("Application Updates");
             _checkUpdatesCheckBox.Text = LocalizationManager.GetString("Check for updates on startup");
-
-            groupBox11.Text = LocalizationManager.GetString("Language");
-            label17.Text = LocalizationManager.GetString("Language:");
 
             groupBox8.Text = LocalizationManager.GetString("Sounds");
             _soundCheckBox.Text = LocalizationManager.GetString("Enable alert sounds");
