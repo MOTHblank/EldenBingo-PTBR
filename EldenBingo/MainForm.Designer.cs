@@ -48,6 +48,7 @@
             _openExternalBoardToolStripButton = new ToolStripButton();
             toolStripSeparator3 = new ToolStripSeparator();
             _settingsButton = new ToolStripButton();
+            _languageButton = new ToolStripDropDownButton();
             _startGameButton = new ToolStripButton();
             splitContainer1 = new SplitContainer();
             _usersListBox = new UI.RichListBox();
@@ -132,7 +133,7 @@
             // 
             toolStrip1.AutoSize = false;
             toolStrip1.GripStyle = ToolStripGripStyle.Hidden;
-            toolStrip1.Items.AddRange(new ToolStripItem[] { _connectButton, _disconnectButton, toolStripSeparator1, _createLobbyButton, _joinLobbyButton, _leaveRoomButton, _changeTeamButton, toolStripSeparator2, _openMapButton, _openExternalBoardToolStripButton, toolStripSeparator3, _settingsButton, _startGameButton });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { _connectButton, _disconnectButton, toolStripSeparator1, _createLobbyButton, _joinLobbyButton, _leaveRoomButton, _changeTeamButton, toolStripSeparator2, _openMapButton, _openExternalBoardToolStripButton, toolStripSeparator3, _settingsButton, _languageButton, _startGameButton });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(947, 70);
@@ -263,6 +264,16 @@
             _settingsButton.TextImageRelation = TextImageRelation.ImageAboveText;
             _settingsButton.Click += _settingsButton_Click;
             // 
+            // _languageButton
+            // 
+            _languageButton.Alignment = ToolStripItemAlignment.Right;
+            _languageButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            _languageButton.ImageScaling = ToolStripItemImageScaling.None;
+            _languageButton.Name = "_languageButton";
+            _languageButton.Size = new Size(45, 67);
+            _languageButton.Text = "Language";
+            _languageButton.ToolTipText = "Language";
+            // 
             // _startGameButton
             // 
             _startGameButton.Alignment = ToolStripItemAlignment.Right;
@@ -366,6 +377,7 @@
         private ToolStripButton _joinLobbyButton;
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripButton _settingsButton;
+        private ToolStripDropDownButton _languageButton;
         private ToolStripButton _startGameButton;
         private ToolStripButton _disconnectButton;
         private ToolStripButton _leaveRoomButton;
