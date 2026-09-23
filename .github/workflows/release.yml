@@ -28,8 +28,27 @@ jobs:
       - name: Build solution
         run: dotnet build EldenBingo.sln -c Release --no-restore
 
-      - name: Publish Windows x64 client
-        run: dotnet publish EldenBingo/EldenBingo.csproj -c Release -r win-x64 --self-contained false -o release
+      - name: Publish self-contained Windows x64 client
+        run: dotnet publish EldenBingo/EldenBingo.csproj -c Release -r win-x64 --self-contained true -o release
+
+      - name: Verify self-contained runtime
+        shell: pwsh
+        run: |
+          $required = @(
+            "EldenBingo.exe",
+            "coreclr.dll",
+            "hostfxr.dll",
+            "hostpolicy.dll"
+          )
+
+          foreach ($file in $required) {
+            $path = Join-Path $PWD "release\$file"
+            if (-not (Test-Path $path)) {
+              throw "Self-contained release is missing required runtime file: $file"
+            }
+          }
+
+          Write-Host "Self-contained runtime files are present."
 
       - name: Smoke test client startup
         shell: pwsh
@@ -39,8 +58,13 @@ jobs:
             throw "Published executable was not found: $exe"
           }
 
+          # Force the smoke test not to use a machine-wide .NET installation.
+          $env:DOTNET_ROOT = Join-Path $PWD "no-system-dotnet"
+          $env:DOTNET_ROOT_X64 = $env:DOTNET_ROOT
+          $env:DOTNET_MULTILEVEL_LOOKUP = "0"
+
           $process = Start-Process -FilePath $exe -PassThru
-          Start-Sleep -Seconds 8
+          Start-Sleep -Seconds 10
 
           if ($process.HasExited) {
             throw "EldenBingo.exe exited during startup with code $($process.ExitCode)."
@@ -88,19 +112,30 @@ jobs:
           $notes = @"
           ## EldenBingo PT-BR $env:VERSION
 
-          Primeira release publicada deste fork com suporte a Português do Brasil e alternância entre EN/PT-BR.
+          Release de correção de inicialização e distribuição.
 
-          ### Inclui
+          ### Correções
+          - O pacote Windows x64 agora é self-contained e não requer instalação separada do .NET Desktop Runtime.
+          - Falhas durante a inicialização agora exibem uma mensagem de erro em vez de fechar silenciosamente.
+          - O log de crash agora preserva a cadeia completa de exceções.
+          - A migração de configurações antigas trata valores ausentes com segurança.
+
+          ### Inclui também
           - Localização em Português do Brasil.
           - Alternância de idioma entre Inglês e Português do Brasil.
           - Correção de segurança para validação do tamanho de pacotes.
-          - Referências de atualização apontando para este fork PT-BR.
 
           ### Requisitos
           - Windows x64.
-          - .NET Desktop Runtime 8.
 
-          O pacote desta release foi compilado e submetido a um teste automático de inicialização antes da publicação.
+          O pacote foi compilado, verificado como self-contained e submetido a um teste automático de inicialização sem usar uma instalação global do .NET.
           "@
 
           gh release create "$env:TAG" "$zip" --target "$env:GITHUB_SHA" --title "$env:TAG - EldenBingo PT-BR" --notes "$notes"
+
+          if ($env:VERSION -eq "0.19.1") {
+            gh release view "v0.19.0" *> $null
+            if ($LASTEXITCODE -eq 0) {
+              gh release edit "v0.19.0" --prerelease --title "v0.19.0 - Superseded by v0.19.1"
+            }
+          }

@@ -2,28 +2,49 @@ using EldenBingo.Util;
 using EldenBingoCommon;
 using System.Configuration;
 using System.Reflection;
+using System.Threading;
 
 namespace EldenBingo
 {
     internal static class Program
     {
         private static MainForm? _mainForm;
+        private static int _fatalExceptionHandling;
+
         /// <summary>
-        ///  The main entry point for the application.
+        /// The main entry point for the application.
         /// </summary>
         [STAThread]
         private static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
-            ApplicationConfiguration.Initialize();
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+            Application.ThreadException += (_, e) => HandleFatalException(e.Exception);
+            AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+            {
+                if (e.ExceptionObject is Exception ex)
+                {
+                    HandleFatalException(ex);
+                }
+                else
+                {
+                    HandleFatalException(new Exception("Unknown unhandled exception."));
+                }
+            };
 
-            handleSettingsChanges();
-            LocalizationManager.CurrentLanguage = Properties.Settings.Default.Language;
+            try
+            {
+                ApplicationConfiguration.Initialize();
 
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(EldenBingo_UnhandledException);
-            _mainForm = new MainForm();
-            Application.Run(_mainForm);
+                handleSettingsChanges();
+                LocalizationManager.CurrentLanguage = Properties.Settings.Default.Language;
+
+                _mainForm = new MainForm();
+                Application.Run(_mainForm);
+            }
+            catch (Exception ex)
+            {
+                HandleFatalException(ex);
+            }
         }
 
         private static void handleSettingsChanges()
@@ -37,18 +58,21 @@ namespace EldenBingo
                 Properties.Settings.Default.IsFirstRun = false;
                 changed = true;
             }
-            if (Properties.Settings.Default.IdentityToken.Length != idTokenLength)
+
+            if ((Properties.Settings.Default.IdentityToken?.Length ?? 0) != idTokenLength)
             {
                 Properties.Settings.Default.IdentityToken = IdentityToken.GenerateIdentityToken(idTokenLength);
                 changed = true;
             }
-            //Use previous binding for Click hotkey if set
+
+            // Use previous binding for Click hotkey if set.
             if (Properties.Settings.Default.ClickHotkey > 0)
             {
                 Properties.Settings.Default.Hotkey_Check = Properties.Settings.Default.ClickHotkey;
                 Properties.Settings.Default.ClickHotkey = 0;
                 changed = true;
             }
+
             if (Properties.Settings.Default.NumpadNavigation)
             {
                 Properties.Settings.Default.Hotkey_Up = (int)Keys.NumPad8;
@@ -74,8 +98,9 @@ namespace EldenBingo
                 Properties.Settings.Default.ArrowNavigation = false;
                 changed = true;
             }
-            // Save settings if the address was changed from the old default value
+
             changed |= rewriteOldAddress();
+
             if (changed)
             {
                 Properties.Settings.Default.Save();
@@ -84,9 +109,13 @@ namespace EldenBingo
 
         private static bool rewriteOldAddress()
         {
-            var serverAddress = Properties.Settings.Default.ServerAddress;
-            var oldServerAddresses = new HashSet<string>(Properties.Settings.Default.OldServerAddresses.Split('|'), StringComparer.InvariantCultureIgnoreCase);
-            if (oldServerAddresses.Contains(serverAddress)) 
+            var serverAddress = Properties.Settings.Default.ServerAddress ?? string.Empty;
+            var oldServerAddressesValue = Properties.Settings.Default.OldServerAddresses ?? string.Empty;
+            var oldServerAddresses = new HashSet<string>(
+                oldServerAddressesValue.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                StringComparer.InvariantCultureIgnoreCase);
+
+            if (oldServerAddresses.Contains(serverAddress))
             {
                 var prop = typeof(Properties.Settings).GetProperty("ServerAddress");
                 if (prop != null)
@@ -99,31 +128,48 @@ namespace EldenBingo
                     }
                 }
             }
+
             return false;
         }
 
-        private static void EldenBingo_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        private static void HandleFatalException(Exception ex)
         {
-            void showError()
+            if (Interlocked.Exchange(ref _fatalExceptionHandling, 1) != 0)
             {
-                var message = string.Empty;
-                var path = string.Empty;
-                if (e.ExceptionObject is Exception ex) 
-                {
-                    message = ex.Message;
-                    path = CrashLogger.LogException(ex);
-                    message += $"{Environment.NewLine}{Environment.NewLine}{"Log written to:"}{Environment.NewLine}{path}";
-                }
-                MessageBox.Show(_mainForm,
-                    $"Unexpected application exception.{Environment.NewLine}{message}",
-                    Application.ProductName,
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-                Application.Exit();
+                return;
             }
-            if (_mainForm != null)
+
+            string logPath;
+            try
             {
-                _mainForm.Invoke(showError);
+                logPath = CrashLogger.LogException(ex);
+            }
+            catch
+            {
+                logPath = "Crash log could not be written.";
+            }
+
+            var message =
+                $"EldenBingo could not continue.{Environment.NewLine}{Environment.NewLine}" +
+                $"{ex.GetType().Name}: {ex.Message}{Environment.NewLine}{Environment.NewLine}" +
+                $"Crash log:{Environment.NewLine}{logPath}";
+
+            try
+            {
+                MessageBox.Show(
+                    message,
+                    "EldenBingo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch
+            {
+                // Avoid masking the original startup failure if Windows cannot show the dialog.
+            }
+            finally
+            {
+                Environment.ExitCode = 1;
+                Application.Exit();
             }
         }
     }
