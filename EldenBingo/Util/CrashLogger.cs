@@ -24,9 +24,7 @@
             {
                 writer.WriteLine($"Crash Log - {timestamp}");
                 writer.WriteLine("-----------------------");
-                writer.WriteLine($"Exception Type: {ex.GetType().FullName}");
-                writer.WriteLine($"Message: {ex.Message}");
-                writer.WriteLine($"Stack Trace:\n{ex.StackTrace}");
+                writer.WriteLine(ex.ToString());
             }
             return logFilePath;
         }
