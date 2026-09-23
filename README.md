@@ -118,24 +118,24 @@ Tokens podem ser usados para criar quadrados mais dinâmicos. Crie um token envo
 Para gerar e publicar uma nova release do projeto **EldenBingo-PTBR**:
 
 1. **Atualizar a Versão no Código:**
-   - Verifique e atualize a versão em `EldenBingoCommon/Version.cs` (ex.: `CurrentVersion => "0.19.0"`).
+   - Verifique e atualize a versão em `EldenBingoCommon/Version.cs` (ex.: `CurrentVersion => "0.19.3"`).
 2. **Compilar os Binários de Release:**
    - Execute o comando de compilação/publicação para a plataforma alvo (Windows x64):
      ```bash
      dotnet publish EldenBingo/EldenBingo.csproj -c Release -r win-x64 -p:EnableWindowsTargeting=true --self-contained false -o ./release
      ```
 3. **Empacotar os Arquivos do Release:**
-   - Comprima os arquivos gerados no diretório `./release` para um arquivo `.zip` (ex.: `EldenBingo_v0.19.0.zip`).
+   - Comprima os arquivos gerados no diretório `./release` para um arquivo `.zip` (ex.: `EldenBingo_v0.19.3.zip`).
 4. **Criar a Tag no Git:**
    - Crie uma tag anotada para a versão correspondente e faça o push para o repositório no GitHub:
      ```bash
-     git tag v0.19.0
-     git push origin v0.19.0
+     git tag 0.19.3
+     git push origin 0.19.3
      ```
 5. **Publicar no GitHub Releases:**
    - Acesse as releases do repositório `MOTHblank/EldenBingo-PTBR` no GitHub.
-   - Crie uma nova Release selecionando a tag `v0.19.0`.
-   - Adicione o título (ex.: `v0.19.0 - Suporte ao Português do Brasil`) e as notas da versão.
+   - Crie uma nova Release selecionando a tag `0.19.3`.
+   - Adicione o título no padrão upstream (ex.: `Elden Bingo v0.19.3`) e as notas da versão.
    - Anexe o arquivo `.zip` empacotado como asset da release e publique.
 
 # Créditos
