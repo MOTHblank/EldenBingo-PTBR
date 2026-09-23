@@ -147,16 +147,24 @@ jobs:
 
           ## Elden Bingo PT-BR v$env:VERSION
 
-          ### Bug Fixes
+          This build is based on upstream awsker/EldenBingo 0.19.0.
+
+          ### PT-BR
+          - Added Brazilian Portuguese localization with English/PT-BR switching from the main toolbar.
+          - Added an icon-only language menu to the toolbar.
+          - Corrected Elden Ring terminology, including "Cavaleiro de Idus" and "Cavaleiro Pesado".
+          - Revised bingo and application terminology for natural Brazilian Portuguese.
+
+          ### Reliability
           - Fixed PT-BR localization startup crashes caused by duplicate case-insensitive dictionary keys.
           - Improved startup crash reporting.
-          - Improved release validation for localization keys.
+          - Added localization-key validation to release CI.
 
           ### Distribution
-          - Restored the upstream awsker/EldenBingo framework-dependent release model to reduce download size.
-          - Windows x64.
+          - Windows x64, matching the upstream framework-dependent distribution model.
           - Requires .NET Desktop Runtime 8.
           - One release ZIP: EldenBingo_v$env:VERSION.zip.
+          - Packaging-only changes may replace this ZIP without changing the application version.
 
           .NET Desktop Runtime 8:
           https://dotnet.microsoft.com/en-us/download/dotnet/8.0
@@ -164,17 +172,38 @@ jobs:
 
           $PSNativeCommandUseErrorActionPreference = $false
           gh release view "$env:TAG" *> $null
+
           if ($LASTEXITCODE -eq 0) {
             gh release edit "$env:TAG" --title "Elden Bingo v$env:VERSION" --notes "$notes"
             if ($LASTEXITCODE -ne 0) {
-              throw "Failed to refresh existing release $env:TAG."
+              throw "Failed to refresh existing release metadata for $env:TAG."
             }
 
-            Write-Host "Release $env:TAG already exists; notes refreshed after successful validation."
-            exit 0
+            gh release upload "$env:TAG" "$zip" --clobber
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to replace release asset for $env:TAG."
+            }
+
+            Write-Host "Refreshed release $env:TAG without changing the application version."
+          }
+          else {
+            gh release create "$env:TAG" "$zip" --target "$env:GITHUB_SHA" --title "Elden Bingo v$env:VERSION" --notes "$notes"
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to publish release $env:TAG."
+            }
           }
 
-          gh release create "$env:TAG" "$zip" --target "$env:GITHUB_SHA" --title "Elden Bingo v$env:VERSION" --notes "$notes"
-          if ($LASTEXITCODE -ne 0) {
-            throw "Failed to publish release $env:TAG."
+          # These tags were release-engineering iterations of the same fork build.
+          # Keep them for history, but do not present them as current stable versions.
+          foreach ($oldTag in @("0.19.3", "v0.19.2", "v0.19.1", "v0.19.0")) {
+            if ($oldTag -eq $env:TAG) {
+              continue
+            }
+
+            gh release view "$oldTag" *> $null
+            if ($LASTEXITCODE -eq 0) {
+              gh release edit "$oldTag" --prerelease --title "$oldTag - Superseded by $env:TAG"
+            }
           }
+
+          exit 0
