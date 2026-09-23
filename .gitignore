@@ -354,3 +354,6 @@ EldenBingo/Textures/Map/**
 
 #Bat files
 *.bat
+
+# Generated release archives
+EldenBingo_v*.zip
