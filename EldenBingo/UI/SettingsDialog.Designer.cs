@@ -90,9 +90,6 @@
             tabPage1 = new TabPage();
             groupBox10 = new GroupBox();
             _checkUpdatesCheckBox = new CheckBox();
-            groupBox11 = new GroupBox();
-            _languageComboBox = new ComboBox();
-            label17 = new Label();
             tabPage2 = new TabPage();
             groupBox9 = new GroupBox();
             panel2 = new Panel();
@@ -736,7 +733,6 @@
             // 
             tabPage1.BackColor = SystemColors.Control;
             tabPage1.Controls.Add(groupBox10);
-            tabPage1.Controls.Add(groupBox11);
             tabPage1.Controls.Add(groupBox3);
             tabPage1.Controls.Add(groupBox8);
             tabPage1.Controls.Add(groupBox5);
@@ -1251,8 +1247,5 @@
         private CheckBox _suggestedColorsCheckBox;
         private TextBox _framerateTextBox;
         private Label label16;
-        private GroupBox groupBox11;
-        private ComboBox _languageComboBox;
-        private Label label17;
     }
 }
