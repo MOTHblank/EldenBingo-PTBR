@@ -762,36 +762,6 @@
             _checkUpdatesCheckBox.TabIndex = 17;
             _checkUpdatesCheckBox.Text = "Check for updates on startup";
             _checkUpdatesCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // groupBox11
-            //
-            groupBox11.Controls.Add(_languageComboBox);
-            groupBox11.Controls.Add(label17);
-            groupBox11.Location = new Point(257, 168);
-            groupBox11.Name = "groupBox11";
-            groupBox11.Size = new Size(240, 75);
-            groupBox11.TabIndex = 18;
-            groupBox11.TabStop = false;
-            groupBox11.Text = "Language";
-            //
-            // label17
-            //
-            label17.AutoSize = true;
-            label17.Location = new Point(12, 22);
-            label17.Name = "label17";
-            label17.Size = new Size(62, 15);
-            label17.TabIndex = 0;
-            label17.Text = "Language:";
-            //
-            // _languageComboBox
-            //
-            _languageComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            _languageComboBox.FormattingEnabled = true;
-            _languageComboBox.Location = new Point(12, 41);
-            _languageComboBox.Name = "_languageComboBox";
-            _languageComboBox.Size = new Size(215, 23);
-            _languageComboBox.TabIndex = 1;
-            //
             // tabPage2
             // 
             tabPage2.BackColor = SystemColors.Control;
