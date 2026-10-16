@@ -1,9 +1,7 @@
 name: Build, smoke test, and release
 
+# Build and publish releases only when explicitly requested.
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
