@@ -60,6 +60,8 @@ namespace EldenBingo
             FormClosing += async (o, e) =>
             {
                 _autoReconnect = false;
+                _mapCoordinateProviderHandler?.Dispose();
+                _mapCoordinateProviderHandler = null;
                 _processHandler.Dispose();
                 _sounds.Dispose();
                 _mapWindow?.DisposeDrawablesOnExit();
@@ -840,6 +842,8 @@ namespace EldenBingo
 
             _mapWindowThread = new Thread(() =>
             {
+                MapWindow? mapWindow = null;
+                MapCoordinateProviderHandler? coordinateHandler = null;
                 Size windowSize;
                 try
                 {
@@ -868,19 +872,25 @@ namespace EldenBingo
                     var offsets = WindowHelper.GetLocationAndSizeOffsets(mapLocation, windowSize, false, 24);
                     mapLocation.Offset(offsets.Item1);
                     windowSize = new Size(windowSize.Width + offsets.Item2.X, windowSize.Height + offsets.Item2.Y);
-                    _mapWindow = new MapWindow((uint)windowSize.Width, (uint)windowSize.Height);
-                    _mapWindow.Position = new Vector2i(mapLocation.X, mapLocation.Y);
-                    _mapCoordinateProviderHandler = new MapCoordinateProviderHandler(_mapWindow, _processHandler, _client);
-                    _mapWindow.Start();
+                    _mapWindow = mapWindow = new MapWindow((uint)windowSize.Width, (uint)windowSize.Height);
+                    mapWindow.Position = new Vector2i(mapLocation.X, mapLocation.Y);
+                    _mapCoordinateProviderHandler = coordinateHandler = new MapCoordinateProviderHandler(mapWindow, _processHandler, _client);
+                    mapWindow.Start();
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Error in map thread: {ex.Message}", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    if (_mapWindow != null)
-                    {
-                        _mapWindow.Close();
+                    mapWindow?.Close();
+                }
+                finally
+                {
+                    // Closing the map must release all its coordinate subscriptions,
+                    // including when the window is closed without reopening it.
+                    coordinateHandler?.Dispose();
+                    if (coordinateHandler != null && ReferenceEquals(_mapCoordinateProviderHandler, coordinateHandler))
+                        _mapCoordinateProviderHandler = null;
+                    if (mapWindow != null && ReferenceEquals(_mapWindow, mapWindow))
                         _mapWindow = null;
-                    }
                 }
             });
             _mapWindowThread.Start();
