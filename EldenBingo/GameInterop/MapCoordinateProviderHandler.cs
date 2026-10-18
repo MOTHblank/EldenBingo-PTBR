@@ -76,7 +76,7 @@ namespace EldenBingo.GameInterop
 
             // Stop process callbacks before releasing the associated map marker.
             _localProvider.Dispose();
-            _window.RemoveCoordinateProvider(_localProvider.Guid);
+            removeMapMarker(_localProvider.Guid);
             _localProvider = null;
         }
 
@@ -153,7 +153,7 @@ namespace EldenBingo.GameInterop
 
             foreach (var guid in notPresent)
             {
-                _window.RemoveCoordinateProvider(guid);
+                removeMapMarker(guid);
                 _netProviders.Remove(guid);
             }
         }
@@ -161,8 +161,15 @@ namespace EldenBingo.GameInterop
         private void clearNetProviders()
         {
             foreach (var guid in _netProviders.Keys)
-                _window.RemoveCoordinateProvider(guid);
+                removeMapMarker(guid);
             _netProviders.Clear();
+        }
+
+        private void removeMapMarker(Guid guid)
+        {
+            // The render window may have already disposed all its drawables on exit.
+            if (_window.IsOpen)
+                _window.RemoveCoordinateProvider(guid);
         }
 
         private void removeClientListeners(Client client)
