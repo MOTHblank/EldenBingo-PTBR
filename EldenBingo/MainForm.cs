@@ -60,8 +60,6 @@ namespace EldenBingo
             FormClosing += async (o, e) =>
             {
                 _autoReconnect = false;
-                _mapCoordinateProviderHandler?.Dispose();
-                _mapCoordinateProviderHandler = null;
                 _processHandler.Dispose();
                 _sounds.Dispose();
                 _mapWindow?.DisposeDrawablesOnExit();
@@ -886,11 +884,18 @@ namespace EldenBingo
                 {
                     // Closing the map must release all its coordinate subscriptions,
                     // including when the window is closed without reopening it.
-                    coordinateHandler?.Dispose();
-                    if (coordinateHandler != null && ReferenceEquals(_mapCoordinateProviderHandler, coordinateHandler))
-                        _mapCoordinateProviderHandler = null;
-                    if (mapWindow != null && ReferenceEquals(_mapWindow, mapWindow))
-                        _mapWindow = null;
+                    try
+                    {
+                        coordinateHandler?.Dispose();
+                    }
+                    finally
+                    {
+                        mapWindow?.ReleaseWindowResources();
+                        if (coordinateHandler != null && ReferenceEquals(_mapCoordinateProviderHandler, coordinateHandler))
+                            _mapCoordinateProviderHandler = null;
+                        if (mapWindow != null && ReferenceEquals(_mapWindow, mapWindow))
+                            _mapWindow = null;
+                    }
                 }
             });
             _mapWindowThread.Start();
