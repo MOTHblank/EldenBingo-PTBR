@@ -5,67 +5,97 @@ using Neto.Shared;
 
 namespace EldenBingo.GameInterop
 {
-    internal class MapCoordinateProviderHandler
+    internal class MapCoordinateProviderHandler : IDisposable
     {
         private Client _client;
         private GameProcessHandler _gameHandler;
         private LocalCoordinateProvider? _localProvider = null;
         private IDictionary<Guid, NetUserCoordinateProvider> _netProviders;
         private MapWindow _window;
+        private readonly object _providerLock = new object();
+        private bool _disposed;
 
         public MapCoordinateProviderHandler(MapWindow window, GameProcessHandler processHandler, Client client)
         {
             _window = window;
             _gameHandler = processHandler;
-            _gameHandler.ProcessReadingChanged += _gameHandler_ProcessReadingChanged;
             _client = client;
-
-            initLocalProvider();
-
             _netProviders = new Dictionary<Guid, NetUserCoordinateProvider>();
 
+            initLocalProvider();
             initProviders(client);
+
             addClientListeners(client);
+            _gameHandler.ProcessReadingChanged += _gameHandler_ProcessReadingChanged;
         }
 
         public void Dispose()
         {
-            removeClientListeners(_client);
+            lock (_providerLock)
+            {
+                if (_disposed)
+                    return;
+
+                _disposed = true;
+                removeClientListeners(_client);
+                _gameHandler.ProcessReadingChanged -= _gameHandler_ProcessReadingChanged;
+                removeLocalProvider();
+                clearNetProviders();
+            }
         }
 
         private void _gameHandler_ProcessReadingChanged(object? sender, EventArgs e)
         {
-            initLocalProvider();
+            lock (_providerLock)
+            {
+                if (!_disposed)
+                    initLocalProvider();
+            }
         }
 
         private void initLocalProvider()
         {
-            if (_localProvider == null)
+            bool shouldHaveLocalProvider = _gameHandler.ReadingProcess && _client.LocalUser?.IsSpectator != true;
+
+            if (shouldHaveLocalProvider && _localProvider == null)
             {
-                if (_gameHandler.ReadingProcess && (_client == null || _client?.LocalUser?.IsSpectator != true))
-                {
-                    _localProvider = new LocalCoordinateProvider(_gameHandler);
-                    _localProvider.User = _client?.LocalUser;
-                    _window.AddCoordinateProvider(_localProvider);
-                }
-            } 
-            else
-            {
-                if (!_gameHandler.ReadingProcess || _client != null && _client?.LocalUser?.IsSpectator == true)
-                {
-                    _window.RemoveCoordinateProvider(_localProvider.Guid);
-                    _localProvider = null;
-                }
+                _localProvider = new LocalCoordinateProvider(_gameHandler);
+                _localProvider.User = _client.LocalUser;
+                _window.AddCoordinateProvider(_localProvider);
             }
+            else if (!shouldHaveLocalProvider && _localProvider != null)
+            {
+                removeLocalProvider();
+            }
+        }
+
+        private void removeLocalProvider()
+        {
+            if (_localProvider == null)
+                return;
+
+            // Stop process callbacks before releasing the associated map marker.
+            _localProvider.Dispose();
+            removeMapMarker(_localProvider.Guid);
+            _localProvider = null;
         }
 
         private void _client_RoomChanged(object? sender, RoomChangedEventArgs e)
         {
-            if (_localProvider != null)
+            lock (_providerLock)
             {
-                _localProvider.User = _client.LocalUser;
+                if (_disposed)
+                    return;
+
+                if (_localProvider != null)
+                    _localProvider.User = _client.LocalUser;
+                initLocalProvider();
+
+                // A newly joined room has its own user objects (even for recurring GUIDs).
+                // Discard stale markers and reconcile every player already in the room.
+                clearNetProviders();
+                initProviders(_client);
             }
-            initLocalProvider();
         }
 
         private void addClientListeners(Client client)
@@ -75,31 +105,40 @@ namespace EldenBingo.GameInterop
             client.AddListener<ServerUserCoordinates>(incomingCoordinates);
         }
 
-        private async Task incomingCoordinates(ClientModel? sender, ServerUserCoordinates coords)
+        private Task incomingCoordinates(ClientModel? sender, ServerUserCoordinates coords)
         {
-            if (_netProviders.TryGetValue(coords.UserGuid, out var np))
+            lock (_providerLock)
             {
-                np.MapCoordinates = new MapCoordinates(coords.X, coords.Y, coords.IsUnderground, coords.Angle, coords.MapInstance);
+                if (!_disposed && _netProviders.TryGetValue(coords.UserGuid, out var provider))
+                {
+                    provider.MapCoordinates = new MapCoordinates(coords.X, coords.Y, coords.IsUnderground, coords.Angle, coords.MapInstance);
+                }
             }
+            return Task.CompletedTask;
         }
 
         private void client_UsersChanged(object? sender, EventArgs e)
         {
-            initProviders(_client);
+            lock (_providerLock)
+            {
+                if (!_disposed)
+                    initProviders(_client);
+            }
         }
 
         private void initProviders(Client client)
         {
-            if (client?.Room == null)
+            if (client.Room == null)
             {
-                _netProviders.Clear();
+                clearNetProviders();
                 return;
             }
+
             var notPresent = new HashSet<Guid>(_netProviders.Keys);
-            //No reason to create coordinate providers for spectators
+            // No reason to create coordinate providers for spectators.
             foreach (var user in client.Room.Users.Where(u => !u.IsSpectator))
             {
-                //Don't create a net coordinate provider for myself
+                // Don't create a net coordinate provider for myself.
                 if (client.LocalUser != null && user.Guid == client.LocalUser.Guid)
                     continue;
 
@@ -111,23 +150,36 @@ namespace EldenBingo.GameInterop
                     _window.AddCoordinateProvider(netUserProvider);
                 }
             }
-            if (notPresent.Any())
+
+            foreach (var guid in notPresent)
             {
-                //Remove all clients that are no longer here
-                foreach (var g in notPresent)
-                {
-                    _window.RemoveCoordinateProvider(g);
-                    _netProviders.Remove(g);
-                }
+                removeMapMarker(guid);
+                _netProviders.Remove(guid);
             }
+        }
+
+        private void clearNetProviders()
+        {
+            foreach (var guid in _netProviders.Keys)
+                removeMapMarker(guid);
+            _netProviders.Clear();
+        }
+
+        private void removeMapMarker(Guid guid)
+        {
+            // The render window may have already disposed all its drawables on exit.
+            if (_window.IsOpen)
+                _window.RemoveCoordinateProvider(guid);
         }
 
         private void removeClientListeners(Client client)
         {
             client.OnRoomChanged -= _client_RoomChanged;
+            client.OnUsersChanged -= client_UsersChanged;
+            client.RemoveListener<ServerUserCoordinates>(incomingCoordinates);
         }
 
-        internal class LocalCoordinateProvider : ICoordinateProvider
+        internal class LocalCoordinateProvider : ICoordinateProvider, IDisposable
         {
             private static readonly Guid LocalProviderGuid = Guid.NewGuid();
             private static readonly SFML.Graphics.Color DefaultColor = new SFML.Graphics.Color(240, 198, 53);
@@ -142,6 +194,11 @@ namespace EldenBingo.GameInterop
                 _lastCoordinates = processHandler.LastCoordinates;
                 _processHandler.CoordinatesChanged += _processHandler_CoordinatesChanged;
                 Changed = _lastCoordinates != null;
+            }
+
+            public void Dispose()
+            {
+                _processHandler.CoordinatesChanged -= _processHandler_CoordinatesChanged;
             }
 
             public bool Changed { get; private set; }
@@ -288,7 +345,7 @@ namespace EldenBingo.GameInterop
 
             public bool Changed => true;
 
-            public SFML.Graphics.Color Color => new SFML.Graphics.Color(_color.R, _color.B, _color.B);
+            public SFML.Graphics.Color Color => new SFML.Graphics.Color(_color.R, _color.G, _color.B);
 
             public Guid Guid => _guid;
 
