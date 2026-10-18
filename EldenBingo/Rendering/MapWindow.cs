@@ -159,7 +159,7 @@ namespace EldenBingo.Rendering
 
         protected override void UnlistenToEvents()
         {
-            base.ListenToEvents();
+            base.UnlistenToEvents();
             InitializingDrawables -= onInitializingDrawables;
             BeforeUpdate -= onBeforeUpdate;
             BeforeDraw -= onBeforeDraw;
@@ -169,6 +169,16 @@ namespace EldenBingo.Rendering
             DisposingDrawables -= onDisposingDrawables;
             MouseButtonPressed -= onMousePressed;
             MouseButtonReleased -= onMouseReleased;
+            ReleaseWindowResources();
+        }
+
+        // Called by the owning map thread after the rendering loop exits.
+        public void ReleaseWindowResources()
+        {
+            Properties.Settings.Default.PropertyChanged -= default_PropertyChanged;
+            InputHandler.ActionJustPressed -= inputHandler_ActionPressed;
+            if (ReferenceEquals(Instance, this))
+                Instance = null;
         }
 
         private void initClassesDrawable()
