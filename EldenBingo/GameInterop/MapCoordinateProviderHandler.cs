@@ -92,7 +92,8 @@ namespace EldenBingo.GameInterop
                 initLocalProvider();
 
                 // A newly joined room has its own user objects (even for recurring GUIDs).
-                // Discard stale markers and reconcile every player already in the room.
+                // Discard stale markers and histories from the previous lobby.
+                _window.RequestClearPlayerTrails();
                 clearNetProviders();
                 initProviders(_client);
             }

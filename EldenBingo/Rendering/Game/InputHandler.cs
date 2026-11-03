@@ -14,6 +14,7 @@ namespace EldenBingo.Rendering.Game
         UndoDrawing,
         ClearDrawing,
         ToggleNames,
+        ToggleTrails,
         SwitchLayer
     }
 
@@ -109,6 +110,9 @@ namespace EldenBingo.Rendering.Game
 
                 case Keyboard.Key.N:
                     return UIActions.ToggleNames;
+
+                case Keyboard.Key.T:
+                    return UIActions.ToggleTrails;
                 
                 case Keyboard.Key.X:
                     return UIActions.SwitchLayer;

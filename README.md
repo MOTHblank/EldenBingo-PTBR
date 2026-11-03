@@ -78,11 +78,14 @@ Você pode usar o botão direito do mouse para desenhar no mapa. Isso se destina
 * Clique Direito - Desenhar no mapa
 * Roda do mouse - Dar zoom in e zoom out
 * N - Alternar visibilidade das etiquetas de nome
+* T - Mostrar/ocultar rastros recentes dos jogadores e indicadores de posição desatualizada (útil para transmissões)
 * Z - Desfazer a última linha desenhada
 * C - Limpar todas as linhas
 * F - Ajustar todos os jogadores na tela
 * X - Alternar entre camadas (Jogo principal e DLC)
 * 1-9 - Seguir um jogador específico
+
+Os rastros do mapa são temporários (até 36 pontos, aproximadamente 35 segundos) e usam a cor de cada jogador. O indicador `8s`, `9s`, etc. aparece quando a última posição recebida está desatualizada. O histórico é descartado ao trocar ou sair de uma sala, e nunca é salvo em disco.
 
 ## Exibição de escolha de classe
 Se você ativar a configuração "Mostrar classes disponíveis em uma camada no mapa", as classes iniciais disponíveis serão exibidas na Janela do Mapa quando a partida começar. Isso é útil se você for um streamer e quiser que seus espectadores vejam a seleção. Basta configurar uma cena no seu software de transmissão que capture a janela do mapa (como captura de jogo) e pronto. Clicar com o botão esquerdo do mouse, pressionar Espaço ou Esc fechará a exibição das classes.

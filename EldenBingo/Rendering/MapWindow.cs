@@ -30,6 +30,7 @@ namespace EldenBingo.Rendering
         private CameraController _cameraController;
         private LineLayer _lineLayer;
         private MapInstance _mapToShow = MapInstance.MainMap;
+        private volatile bool _clearTrailsRequested;
 
         //private RenderLayer _hudLayer;
         private EldenRingAvailableClassesDrawable? _availableClasses;
@@ -97,6 +98,9 @@ namespace EldenBingo.Rendering
 
         public bool ShowPlayerNames { get; set; } = true;
 
+        // T hides all spectator tracking overlays for clean broadcasts.
+        public bool ShowPlayerTrails { get; set; } = true;
+
         public ToolMode ToolMode { get; set; }
 
         public void AddCoordinateProvider(ICoordinateProvider p)
@@ -108,6 +112,12 @@ namespace EldenBingo.Rendering
                 _guids.Add(p.Guid);
                 Players.Add(player);
             }
+        }
+
+        // Called from lobby/network callbacks; the clear runs on the render thread.
+        public void RequestClearPlayerTrails()
+        {
+            _clearTrailsRequested = true;
         }
 
         public void RemoveCoordinateProvider(Guid g)
@@ -250,6 +260,12 @@ namespace EldenBingo.Rendering
 
         private void onBeforeUpdate(object? sender, EventArgs e)
         {
+            if (_clearTrailsRequested)
+            {
+                _clearTrailsRequested = false;
+                foreach (var player in Players)
+                    player.ClearTrail();
+            }
             //Update both map and player visibility before update because the cameraController uses player
             //visibility in its "update" method to fit visible players in its view
             updateMapInstanceToShow();
@@ -283,6 +299,9 @@ namespace EldenBingo.Rendering
             {
                 case UIActions.ToggleNames:
                     ShowPlayerNames = !ShowPlayerNames;
+                    break;
+                case UIActions.ToggleTrails:
+                    ShowPlayerTrails = !ShowPlayerTrails;
                     break;
                 case UIActions.SwitchLayer:
                     _mapToShow = 1 - _mapToShow;
