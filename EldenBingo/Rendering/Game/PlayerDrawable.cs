@@ -192,6 +192,7 @@ namespace EldenBingo.Rendering.Game
         {
             NameTag?.Dispose();
             _staleAgeTag.Dispose();
+            _trailVertices.Dispose();
         }
 
         public void ClearTrail()
