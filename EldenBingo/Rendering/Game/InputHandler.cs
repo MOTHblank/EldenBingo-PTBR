@@ -66,6 +66,9 @@ namespace EldenBingo.Rendering.Game
         {
             _window.KeyPressed -= window_onKeyPressed;
             _window.KeyReleased -= window_onKeyReleased;
+            _window.MouseButtonPressed -= window_onMouseButtonPressed;
+            _window.MouseButtonReleased -= window_onMouseButtonReleased;
+            _window.MouseWheelScrolled -= window_onMouseScrolled;
         }
 
         private UIActions? getActionFromMouseButton(Mouse.Button key)
@@ -169,6 +172,13 @@ namespace EldenBingo.Rendering.Game
                 actionDown(action.Value, new Vector2i(e.X, e.Y));
                 actionUp(action.Value, new Vector2i(e.X, e.Y));
             }
+        }
+
+        // Focus loss does not reliably generate mouse or key release events.
+        public void ReleaseAllActions()
+        {
+            foreach (var action in _actionsHeld.Keys.ToArray())
+                actionUp(action);
         }
 
         private void actionDown(UIActions action, Vector2i? mousePos = null)

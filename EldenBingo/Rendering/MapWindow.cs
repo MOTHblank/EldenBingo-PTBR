@@ -155,6 +155,7 @@ namespace EldenBingo.Rendering
             DisposingDrawables += onDisposingDrawables;
             MouseButtonPressed += onMousePressed;
             MouseButtonReleased += onMouseReleased;
+            LostFocus += onWindowLostFocus;
         }
 
         protected override void UnlistenToEvents()
@@ -169,6 +170,7 @@ namespace EldenBingo.Rendering
             DisposingDrawables -= onDisposingDrawables;
             MouseButtonPressed -= onMousePressed;
             MouseButtonReleased -= onMouseReleased;
+            LostFocus -= onWindowLostFocus;
             ReleaseWindowResources();
         }
 
@@ -176,6 +178,9 @@ namespace EldenBingo.Rendering
         public void ReleaseWindowResources()
         {
             Properties.Settings.Default.PropertyChanged -= default_PropertyChanged;
+            MouseLeftHeld = false;
+            MouseRightHeld = false;
+            InputHandler.ReleaseAllActions();
             InputHandler.ActionJustPressed -= inputHandler_ActionPressed;
             if (ReferenceEquals(Instance, this))
                 Instance = null;
@@ -323,8 +328,15 @@ namespace EldenBingo.Rendering
             }
             if (e.Button == Mouse.Button.Right)
             {
-                MouseRightHeld = false;
+                MouseRightHeld = true;
             }
+        }
+
+        private void onWindowLostFocus(object? sender, EventArgs e)
+        {
+            MouseLeftHeld = false;
+            MouseRightHeld = false;
+            InputHandler.ReleaseAllActions();
         }
 
         private void onMouseReleased(object? sender, MouseButtonEventArgs e)

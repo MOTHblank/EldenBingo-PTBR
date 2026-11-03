@@ -178,12 +178,28 @@ namespace EldenBingo.UI
             {
                 DisconnectHotkeys();
                 disconnectMouseWheel();
+                LocalizationManager.LanguageChanged -= onLanguageChanged;
+                Properties.Settings.Default.PropertyChanged -= default_PropertyChanged;
             };
             Resize += bingoControl_SizeChanged;
             MouseClick += bingoControl_OnMouseClick;
             MouseMove += bingoControl_OnMouseMove;
             MouseLeave += bingoControl_OnMouseLeave;
             Properties.Settings.Default.PropertyChanged += default_PropertyChanged;
+            LocalizationManager.LanguageChanged += onLanguageChanged;
+        }
+
+        private void onLanguageChanged()
+        {
+            if (IsDisposed || Disposing)
+                return;
+            if (InvokeRequired)
+            {
+                if (IsHandleCreated)
+                    BeginInvoke(onLanguageChanged);
+                return;
+            }
+            updateBoardStatus(Client?.Room?.Match?.MatchStatus ?? MatchStatus.NotRunning);
         }
 
         private void bingoControl_OnMouseMove(object? sender, MouseEventArgs e)
@@ -1006,14 +1022,14 @@ namespace EldenBingo.UI
             {
                 if (_bingoBoard == null)
                 {
-                    StatusString = status == MatchStatus.Starting ? NO_BOARD_STARTING : NO_BOARD_WAITING;
+                    StatusString = LocalizationManager.GetString(status == MatchStatus.Starting ? NO_BOARD_STARTING : NO_BOARD_WAITING);
                     StatusStringVisible = true;
                 }
                 else
                 {
                     if (!Revealed && status < MatchStatus.Preparation)
                     {
-                        StatusString = BOARD_NOT_REVEALED;
+                        StatusString = LocalizationManager.GetString(BOARD_NOT_REVEALED);
                         StatusStringVisible = true;
                     }
                     else

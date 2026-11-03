@@ -102,6 +102,7 @@ namespace EldenBingo
             _consolePage.Text = LocalizationManager.GetString("Console");
             _lobbyPage.Text = LocalizationManager.GetString("Lobby");
             _lobbyControl?.ApplyLocalization();
+            updateStatusString();
         }
 
         private void InitializeLanguageMenu()

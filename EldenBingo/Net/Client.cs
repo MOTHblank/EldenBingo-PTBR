@@ -71,13 +71,13 @@ namespace EldenBingo
         public override string GetConnectionStatusString()
         {
             if (!IsConnected)
-                return "Not connected";
+                return LocalizationManager.GetString("Not connected");
             if (CancellationToken.IsCancellationRequested)
-                return "Stopping...";
+                return LocalizationManager.GetString("Stopping...");
             if (Room == null)
-                return "Connected - Not in a lobby";
+                return LocalizationManager.GetString("Connected - Not in a lobby");
             else
-                return "Connected - Lobby: " + Room.Name;
+                return LocalizationManager.GetString("Connected - Lobby: ") + Room.Name;
         }
 
         public async Task RequestRoomName()
@@ -101,14 +101,14 @@ namespace EldenBingo
         public async Task LeaveRoom()
         {
             Room = null;
-            FireOnStatus("Left lobby");
+            FireOnStatus(LocalizationManager.GetString("Left lobby"));
             await SendPacketToServer(new Packet(new ClientRequestLeaveRoom()));
         }
 
         public void BannedFromCurrentRoom()
         {
             Room = null;
-            FireOnStatus("Banned from lobby");
+            FireOnStatus(LocalizationManager.GetString("Banned from lobby"));
         }
 
         protected override async Task DispatchObjects(ClientModel? sender, IEnumerable<object> objects)
@@ -183,7 +183,7 @@ namespace EldenBingo
             if (Room != null && userBanned.User.Guid == ClientGuid)
             {
                 Room = null;
-                FireOnStatus("Banned from lobby");
+                FireOnStatus(LocalizationManager.GetString("Banned from lobby"));
             }
         }
 
@@ -202,13 +202,13 @@ namespace EldenBingo
         private async Task createRoomDenied(ClientModel? _, ServerCreateRoomDenied createRoomDenied)
         {
             Room = null;
-            FireOnStatus($"Create lobby failed: {createRoomDenied.Reason}");
+            FireOnStatus(LocalizationManager.GetString("Create lobby failed: ") + createRoomDenied.Reason);
         }
 
         private async Task joinRoomDenied(ClientModel? _, ServerJoinRoomDenied joinDenied)
         {
             Room = null;
-            FireOnStatus($"Join lobby failed: {joinDenied.Reason}");
+            FireOnStatus(LocalizationManager.GetString("Join lobby failed: ") + joinDenied.Reason);
         }
 
         private async Task joinRoomAccepted(ClientModel? _, ServerJoinRoomAccepted joinAccepted)
@@ -216,7 +216,7 @@ namespace EldenBingo
             var sameRoomAsBefore = Room != null && Room.Name == joinAccepted.RoomName;
 
             if (!sameRoomAsBefore)
-                FireOnStatus($"Joined lobby");
+                FireOnStatus(LocalizationManager.GetString("Joined lobby"));
             var room = new Room(joinAccepted.RoomName);
             room.Match.UpdateMatchStatus(joinAccepted.MatchStatus, joinAccepted.Paused, joinAccepted.Timer);
             foreach (var user in joinAccepted.Users)

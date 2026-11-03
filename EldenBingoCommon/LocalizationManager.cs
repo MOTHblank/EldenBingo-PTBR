@@ -163,6 +163,22 @@ namespace EldenBingoCommon
             { "Open Ruleset...", "Abrir Conjunto de Regras..." },
             { "Save Ruleset To File...", "Salvar Conjunto de Regras em Arquivo..." },
 
+            // Board overlay states (localized at display time)
+            { "Waiting for match to start...", "Aguardando o início da partida..." },
+            { "Click to reveal...", "Clique para revelar..." },
+            { "Match Starting...", "Partida começando..." },
+
+            // Connection and lobby status (never used as protocol values)
+            { "Not connected", "Não conectado" },
+            { "Stopping...", "Encerrando..." },
+            { "Connected - Not in a lobby", "Conectado - Fora de uma sala" },
+            { "Connected - Lobby: ", "Conectado - Sala: " },
+            { "Left lobby", "Saiu da sala" },
+            { "Banned from lobby", "Banido da sala" },
+            { "Create lobby failed: ", "Falha ao criar a sala: " },
+            { "Join lobby failed: ", "Falha ao entrar na sala: " },
+            { "Joined lobby", "Entrou na sala" },
+
             // Map Window & Popout Board Form
             { "Map Window", "Janela do Mapa" },
             { "Textures loading...", "Carregando texturas..." },
